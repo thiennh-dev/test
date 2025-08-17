@@ -1,0 +1,49 @@
+---
+const NOW_PLAYING_URL = 'https://spotify-worker.thiennh.workers.dev/'; // replace this with your worker URL
+
+// Fetch the data on the server
+let nowPlaying = null;
+try {
+  const res = await fetch(NOW_PLAYING_URL);
+  nowPlaying = await res.json();
+} catch (err) {
+  nowPlaying = { error: 'Failed to fetch data from Worker.' };
+}
+---
+<div class="now-playing">
+  <h2>Spotify Now Playing</h2>
+  {nowPlaying.error ? (
+    <p style="color:red;">{nowPlaying.error}</p>
+  ) : nowPlaying.is_playing ? (
+    <>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        {nowPlaying.item?.album?.images?.[1]?.url && (
+          <img src={nowPlaying.item.album.images[1].url} alt="Album cover" width="64" height="64" style="border-radius:8px;" loading="lazy" />
+        )}
+        <div>
+          <strong>
+            {nowPlaying.item?.name || "Unknown Track"}
+          </strong>
+          <br />
+          <span>
+            by {nowPlaying.item?.artists?.map((a: { name: string }) => a.name).join(", ") || "Unknown Artist"}
+          </span>
+          <br />
+          <a href={nowPlaying.item?.external_urls?.spotify} target="_blank" rel="noopener noreferrer">
+            Listen on Spotify
+          </a>
+        </div>
+      </div>
+      <p>
+        <small>Last checked: {nowPlaying.fetched_at}</small>
+      </p>
+    </>
+  ) : (
+    <>
+      <p>Not playing anything right now.</p>
+      <p>
+        <small>Last checked: {nowPlaying.fetched_at}</small>
+      </p>
+    </>
+  )}
+</div>
